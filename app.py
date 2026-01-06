@@ -16,6 +16,7 @@ app = Flask(__name__)
 # Configure logging for verbose Docker output
 logging.basicConfig(level=logging.INFO,stream=sys.stdout)
 logger = logging.getLogger(__name__)
+print("test")
 
 IHM_HOST = os.environ.get("IHM_HOST")  # Docker service name
 IHM_PROJECT_SLUG = os.environ.get("IHM_PROJECT_SLUG")
