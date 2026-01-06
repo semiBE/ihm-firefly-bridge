@@ -1,0 +1,41 @@
+services:
+  ihm:
+    image: ihatemoney/ihatemoney:latest
+    container_name: ihm
+    ports:
+      - "8800:8000"
+    environment:
+      ACTIVATE_DEMO_PROJECT: "False"
+      SECRET_KEY: ${SECRET_KEY} # Sets the secret key environment variable for the application.
+      SQLALCHEMY_DATABASE_URI: "sqlite:////database/ihatemoney.db"
+      ACTIVATE_ADMIN_DASHBOARD: "True" # Enables the admin dashboard.
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD} # Sets the admin password. On the host run: docker run -it --rm --entrypoint ihatemoney ihatemoney/ihatemoney generate_password_hash
+      SESSION_COOKIE_SECURE: "False" # Disables secure session cookies for development.
+    networks:
+      - ihatemoney_network # Connects the service to a network.
+    volumes:
+      - ${IHM_DB_PATH}:/database
+    restart: unless-stopped
+
+  bridge:
+    #image: ihm-bridge/ihm-bridge:latest
+    build: https://github.com/semiBE/ihm-firefly-bridge.git#main
+    container_name: firefly-ihm-bridge
+    ports:
+      - "8700:5000"
+    depends_on:
+      - ihm
+    restart: unless-stopped
+    environment:
+      - IHM_HOST=${IHM_HOST}
+      - IHM_PROJECT_SLUG=${IHM_PROJECT_SLUG}
+      - IHM_PROJECT_PASSWORD=${IHM_PROJECT_PASSWORD}
+    networks:
+      - ihatemoney_network # Connects the MySQL service to the network.
+    labels:
+      - "com.centurylinklabs.watchtower.enable=false"
+
+
+networks:
+  ihatemoney_network:
+    driver: bridge
